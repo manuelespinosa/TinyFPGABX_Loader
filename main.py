@@ -1,6 +1,6 @@
 import sys
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, DISABLED, NORMAL
 from tkinter import filedialog
 from tkinter import PhotoImage
 import os
@@ -30,6 +30,7 @@ class StdoutRedirector:
     def flush(self):
         pass  # Dejar flush vacío, ya que no es necesario
 
+
 def redirigir_output(text_widget):
     sys.stdout = StdoutRedirector(text_widget)
 
@@ -42,6 +43,7 @@ def seleccionar_puerto():
     etiqueta.config(text=f"Puerto seleccionado: {seleccion}")
 """
 
+
 # Refresca los puertos COM del PC
 def refrescar_puertos():
     puertos_serie = [port.device for port in serial.tools.list_ports.comports()]
@@ -53,6 +55,7 @@ def refrescar_puertos():
 
     logging.info("Puertos disponibles refrescados\n")
 
+
 def strict_query_user(question):
     valid = {"yes": True}
 
@@ -62,6 +65,7 @@ def strict_query_user(question):
         sys.stdout.write(question + prompt)
         choice = input().lower()
         return valid.get(choice, False)
+
 
 def check_if_overwrite_bootloader(addr, length, userdata_range):
     ustart = userdata_range[0]
@@ -118,14 +122,31 @@ def procesar_archivo():
         else:
             print("No existen *.v en el directorio")
 """
+
+
 # Seleccion de directorio, crea .init y .pcf
 def sel_folder():
     global directorio
     directorio = filedialog.askdirectory()
-    subprocess.Popen("apio init --board TinyFPGA-BX -y", cwd=directorio)
-    #shutil.copyfile('./Resources/pins.pcf', directorio + '/pins.pcf')
-    with open(directorio + "/pins.pcf", 'w') as f:
-        f.write(recursos.pins_pcf)
+    if directorio != '':  # Si se ha seleccionado directorio correctamente
+        try:
+            subprocess.Popen("apio init --board TinyFPGA-BX -y", cwd=directorio)
+        except Exception as e:
+            print(e)
+        #shutil.copyfile('./Resources/pins.pcf', directorio + '/pins.pcf')
+
+        file = glob.glob(directorio + '/pins.pcf')
+        if not file:
+            with open(directorio + "/pins.pcf", 'w') as f:
+                f.write(recursos.pins_pcf)
+        btn_verify['state'] = NORMAL
+        btn_build['state'] = NORMAL
+        btn_sim['state'] = NORMAL
+    else:
+        btn_verify['state'] = DISABLED
+        btn_build['state'] = DISABLED
+        btn_sim['state'] = DISABLED
+
 
 # Comprueba si existe *.v  lanza apio verify
 def verify():
@@ -138,6 +159,16 @@ def verify():
         print("No existen *.v en el directorio")
         print("Crea tu archivo verilog")
 
+
+def simulate():
+    text_widget.delete('1.0', tk.END)
+    files = glob.glob(directorio + '/*.v')
+    if len(files) > 0:
+        subprocess.Popen("apio sim", cwd=directorio)
+        sleep(2)
+    else:
+        print("No existen *.v en el directorio")
+        print("Crea tu archivo verilog")
 
 def build():
     files = glob.glob(directorio + '/*.v')
@@ -168,6 +199,7 @@ def build():
                 text_widget.insert(tk.END, "\nProgramado correctamente\n")
                 # sys.exit(0)
 
+
 # Funcion que se encarga de guardar el path de las imagenes
 def resource_path(relative_path):
 
@@ -177,6 +209,7 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
 
 """ Compilar .exe con el comando pyinstaller --onefile --add-data "Resources;Resources" main.py"""
 
@@ -189,7 +222,7 @@ color="#23343c" #color fondo de los frames
 
 
 #Datos de icono
-icon_path = resource_path(os.path.join("Resources","icon.ico"))
+icon_path = resource_path(os.path.join("Resources", "icon.ico"))
 ventana.iconbitmap(icon_path)
 
 
@@ -239,19 +272,23 @@ etiqueta.pack(side=tk.BOTTOM)
 
 #Botón Seleccionar Carpeta
 btn_folder = tk.Button(frame_sel, text="Seleccionar carpeta", command=sel_folder)
-btn_folder.pack(side=tk.TOP, pady=(10 , 5))
+btn_folder.pack(side=tk.TOP, pady=(10, 5))
 
 
 #Boton Verificar
-btn_verify = tk.Button(frame_ver_build, text="Verificar",command=verify)
+btn_verify = tk.Button(frame_ver_build, text="Verificar", command=verify, state=DISABLED)
 btn_verify.pack(side=tk.LEFT, padx=10)
 
+#Boton Simular
+btn_sim = tk.Button(frame_ver_build, text="Simular", command=simulate, state=DISABLED)
+btn_sim.pack(side=tk.LEFT, padx=10)
+
 #Boton Build & Upload
-btn_build = tk.Button(frame_ver_build, text="Build & Upload",command=build)
+btn_build = tk.Button(frame_ver_build, text="Build & Upload", command=build, state=DISABLED)
 btn_build.pack(side=tk.LEFT, padx=10)
 
 
-text_widget = tk.Text(frame_text_widget, wrap=tk.WORD, height= 3, width=40)
+text_widget = tk.Text(frame_text_widget, wrap=tk.WORD, height=3, width=40)
 text_widget.pack()
 
 redirigir_output(text_widget)
