@@ -1,4 +1,4 @@
 # TinyFPGABX_Loader
-A tool for upload Verilog builds into defectives TinyFPGA-BX (missing metadata). 
+A tool for uploading Verilog builds into defective TinyFPGA-BX (missing metadata).
 
-The tool also includes option for select working directory, performing an *apio init*, and creating _pins.pcf_ file if does not exists.
+The tool also includes an option to select the working directory, perform an 'apio init', and create a 'pins.pcf' file if it does not exist.
