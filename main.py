@@ -35,15 +35,6 @@ def redirigir_output(text_widget):
     sys.stdout = StdoutRedirector(text_widget)
 
 
-#ser = SerialPort("COM5")
-
-"""
-def seleccionar_puerto():
-    seleccion = combo.get()
-    etiqueta.config(text=f"Puerto seleccionado: {seleccion}")
-"""
-
-
 # Refresca los puertos COM del PC
 def refrescar_puertos():
     puertos_serie = [port.device for port in serial.tools.list_ports.comports()]
@@ -87,41 +78,6 @@ def check_if_overwrite_bootloader(addr, length, userdata_range):
 
     return True
 
-
-"""
-def procesar_archivo():
-
-    files = glob.glob(directorio + '/*.v')
-    if len(files) > 0:
-        subprocess.Popen("apio verify", cwd=directorio)
-        sleep(2)
-        subprocess.Popen("apio build", cwd=directorio)
-        sleep(2)
-        archivo = directorio + "/hardware.bin"
-        if os.path.exists(archivo):
-            # Realiza la acción que desees con el archivo binario seleccionado
-            # Por ejemplo, puedes imprimir la ruta del archivo
-            print("Archivo seleccionado:", archivo)
-
-            #ser = SerialPort('COM5')
-            puerto = combo.get()
-            ser=serial.Serial(puerto, timeout=1.0, writeTimeout=1.0).__enter__()
-
-            tinyprog = TinyProg(ser)
-            bitstream = tinyprog.slurp(archivo)
-            addr = tinyprog.meta.userimage_addr_range()[0]
-            print("    Programming at addr 0x{:06x}".format(addr))
-            if not tinyprog.program_bitstream(addr, bitstream):
-                print("Failed to program... exiting")
-                text_widget.insert(tk.END, "\nFallo al programar\n")
-                #sys.exit(1)
-            else:
-                tinyprog.boot()
-                text_widget.insert(tk.END, "\nProgramado correctamente\n")
-                #sys.exit(0)
-        else:
-            print("No existen *.v en el directorio")
-"""
 
 
 # Seleccion de directorio, crea .init y .pcf
